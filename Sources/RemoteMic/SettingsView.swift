@@ -12,6 +12,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     case privateFeature
     case macros
     case mapping
+    case agents
     case statistics
     case transcripts
     case permissions
@@ -25,6 +26,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .privateFeature: return ""
         case .macros: return ""
         case .mapping: return "settings.section.buttons"
+        case .agents: return "settings.section.agents"
         case .statistics: return "settings.section.statistics"
         case .transcripts: return "settings.section.transcripts"
         case .permissions: return "settings.section.permissions"
@@ -38,6 +40,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .privateFeature: return "sparkles"
         case .macros: return "command.square"
         case .mapping: return "keyboard"
+        case .agents: return "switch.2"
         case .statistics: return "chart.bar.xaxis"
         case .transcripts: return "text.bubble.fill"
         case .permissions: return "shield.lefthalf.filled"
@@ -175,6 +178,7 @@ struct SettingsView: View {
     private let minimumContentSize: CGSize
     private static let sidebarSectionOrder: [SettingsSection] = [
         .mapping,
+        .agents,
         .macros,
         .statistics,
         .transcripts,
@@ -534,6 +538,8 @@ struct SettingsView: View {
             }
         case .mapping:
             mappingPage
+        case .agents:
+            AgentControllerSection(model: model.agentController)
         case .statistics:
             statisticsPage
         case .transcripts:
@@ -3303,7 +3309,7 @@ private struct ShortcutCaptureView: NSViewRepresentable {
     }
 }
 
-private enum CompatibilityButtonStyle {
+enum CompatibilityButtonStyle {
     case standard
     case prominent
 }
@@ -3327,6 +3333,7 @@ private struct CompatibilityGlassContainer<Content: View>: View {
 
     @ViewBuilder
     var body: some View {
+#if compiler(>=6.2)
         if #available(macOS 26.0, *), SettingsVisualRenderingPolicy.usesNativeGlass {
             GlassEffectContainer(spacing: spacing) {
                 content
@@ -3334,6 +3341,9 @@ private struct CompatibilityGlassContainer<Content: View>: View {
         } else {
             content
         }
+#else
+        content
+#endif
     }
 }
 
@@ -3342,6 +3352,7 @@ private struct CompatibilityButtonStyleModifier: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
+#if compiler(>=6.2)
         if #available(macOS 26.0, *), SettingsVisualRenderingPolicy.usesNativeGlass {
             switch style {
             case .standard:
@@ -3357,17 +3368,29 @@ private struct CompatibilityButtonStyleModifier: ViewModifier {
                 content.buttonStyle(.borderedProminent)
             }
         }
+#else
+        switch style {
+        case .standard:
+            content.buttonStyle(.bordered)
+        case .prominent:
+            content.buttonStyle(.borderedProminent)
+        }
+#endif
     }
 }
 
 private struct CompatibilityScrollEdgeEffectModifier: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
+#if compiler(>=6.2)
         if #available(macOS 26.0, *), SettingsVisualRenderingPolicy.usesNativeGlass {
             content.scrollEdgeEffectStyle(.soft, for: .top)
         } else {
             content
         }
+#else
+        content
+#endif
     }
 }
 
@@ -3402,6 +3425,7 @@ private struct CompatibilityTintedGlassModifier<GlassShape: Shape>: ViewModifier
 
     @ViewBuilder
     func body(content: Content) -> some View {
+#if compiler(>=6.2)
         if #available(macOS 26.0, *), SettingsVisualRenderingPolicy.usesNativeGlass {
             if interactive {
                 content.glassEffect(.clear.tint(tint).interactive(), in: shape)
@@ -3418,10 +3442,20 @@ private struct CompatibilityTintedGlassModifier<GlassShape: Shape>: ViewModifier
                     )
                 )
         }
+#else
+        content
+            .background(tint, in: shape)
+            .overlay(
+                shape.stroke(
+                    Color(nsColor: .separatorColor).opacity(0.45),
+                    lineWidth: 1
+                )
+            )
+#endif
     }
 }
 
-private extension View {
+extension View {
     func compatibilityButtonStyle(_ style: CompatibilityButtonStyle) -> some View {
         modifier(CompatibilityButtonStyleModifier(style: style))
     }
@@ -3471,6 +3505,7 @@ struct GlassPanel<Content: View>: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: 20, style: .continuous)
+#if compiler(>=6.2)
         if #available(macOS 26.0, *), SettingsVisualRenderingPolicy.usesNativeGlass {
             content
                 .padding(16)
@@ -3496,6 +3531,29 @@ struct GlassPanel<Content: View>: View {
                     )
                 )
         }
+#else
+        if SettingsVisualRenderingPolicy.isScreenshotHarness {
+            content
+                .padding(16)
+                .background(Color(nsColor: .controlBackgroundColor), in: shape)
+                .overlay(
+                    shape.stroke(
+                        Color(nsColor: .separatorColor).opacity(0.45),
+                        lineWidth: 1
+                    )
+                )
+        } else {
+            content
+                .padding(16)
+                .background(.regularMaterial, in: shape)
+                .overlay(
+                    shape.stroke(
+                        Color(nsColor: .separatorColor).opacity(0.45),
+                        lineWidth: 1
+                    )
+                )
+        }
+#endif
     }
 }
 

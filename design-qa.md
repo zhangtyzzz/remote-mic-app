@@ -72,6 +72,8 @@
 
 2026-08-17 系统 Fn 第 3 项加入 macOS 键盘设置浅色/深色原图。生产视图已检查浅色、深色正常状态及浅色冲突状态，截图、实时说明、紧凑“打开键盘设置”按钮和底部导航均同时可见，未重新引入内部滚动。
 
+2026-08-21 新增“Agent 控制”侧边栏页面：当前目标、五个 Agent 卡片、安装状态、控制路径和遥控器动作说明全部在页面内铺平，不使用下拉框、Popover 或 Sheet。生产 App 已检查 `1020 × 772` 中文浅色、English 深色和 `800 × 650` 中文浅色；默认尺寸完整显示五个目标及动作说明，最小尺寸通过页面滚动访问后续卡片，文本无横向裁切，交互字号不低于 12pt。真实遥控器触发、目标 App Accessibility 变化和 cmux 当前会话仍按 `Testing/AgentController.md` 人工验收。
+
 ## 2026-08-18 回眸页面验证
 
 - 确认稿：`dist/designs/reflections-layout/expanded-app-switcher-collapsible-timeline.png`；实际实现截图：`dist/designs/reflections-layout/implemented-expanded.png`；并排比较图：`dist/designs/reflections-layout/reference-vs-implemented.png`。
