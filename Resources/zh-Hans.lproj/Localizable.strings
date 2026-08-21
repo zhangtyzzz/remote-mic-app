@@ -21,6 +21,7 @@
 "audio.test_tone.completed" = "测试音已完成";
 "audio.test_tone.cancelled" = "测试音已取消";
 "voice_button.status.fn_enabled" = "遥控器语音键已硬件映射为 Fn";
+"voice_button.status.option_enabled" = "遥控器语音键已硬件映射为左 Option";
 "voice_button.status.waiting" = "等待遥控器 Fn 硬件映射";
 "voice_button.status.fn_pressed" = "硬件 Fn 已按下；松开语音键即释放";
 "voice_button.status.fn_released" = "硬件 Fn 已释放";

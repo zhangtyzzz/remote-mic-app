@@ -21,6 +21,7 @@
 "audio.test_tone.completed" = "Test tone complete";
 "audio.test_tone.cancelled" = "Test tone canceled";
 "voice_button.status.fn_enabled" = "The remote voice button is mapped to Fn in hardware";
+"voice_button.status.option_enabled" = "The remote voice button is mapped to Left Option in hardware";
 "voice_button.status.waiting" = "Waiting for the remote Fn hardware mapping";
 "voice_button.status.fn_pressed" = "Hardware Fn is held; release the voice button to release it";
 "voice_button.status.fn_released" = "Hardware Fn released";

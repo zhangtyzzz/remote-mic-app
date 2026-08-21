@@ -2667,12 +2667,16 @@ final class BridgeAppModel: ObservableObject, XiaomiBluetoothBridgeDelegate {
     private func applyVoiceFunctionMapping(neutralizeVoiceKey: Bool) -> Bool {
         let applied = voiceFunctionMapper.apply(
             suppressPowerKey: settings.customMappingEnabled,
-            neutralizeVoiceKey: neutralizeVoiceKey
+            neutralizeVoiceKey: neutralizeVoiceKey,
+            voiceKeyTarget: settings.remoteVoiceKeyTarget
         )
         if !isStreaming {
             isVoiceTriggerEnabled = applied
+            let enabledStatusKey = settings.remoteVoiceKeyTarget == .leftOption
+                ? "voice_button.status.option_enabled"
+                : "voice_button.status.fn_enabled"
             voiceShortcutStatus = LocalizedMessage(
-                applied ? "voice_button.status.fn_enabled" : "voice_button.status.waiting"
+                applied ? enabledStatusKey : "voice_button.status.waiting"
             )
         }
         return !settings.customMappingEnabled || voiceFunctionMapper.isPowerKeySuppressed

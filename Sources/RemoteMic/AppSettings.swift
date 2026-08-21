@@ -22,6 +22,7 @@ private struct PersonalizedConfiguration: Codable {
     let checksForPreReleaseUpdates: Bool?
     let experimentalContinuousRecordingEnabled: Bool?
     let voiceFnTapModeEnabled: Bool?
+    let remoteVoiceKeyTarget: RemoteVoiceKeyTarget?
     let continuousRecordingPowerBindingBackup: ConfiguredButtonAction?
 }
 
@@ -241,6 +242,7 @@ final class AppSettings: ObservableObject {
         static let checksForPreReleaseUpdates = "checksForPreReleaseUpdates"
         static let experimentalContinuousRecordingEnabled = "experimentalContinuousRecordingEnabled"
         static let voiceFnTapModeEnabled = "voiceFnTapModeEnabled"
+        static let remoteVoiceKeyTarget = "remoteVoiceKeyTarget"
         static let localTranscriptHistoryEnabled = "localTranscriptHistoryEnabled"
         static let continuousRecordingPowerBindingBackup = "continuousRecordingPowerBindingBackup"
         static let lastLaunchedBuild = "launch.lastLaunchedBuild"
@@ -348,6 +350,10 @@ final class AppSettings: ObservableObject {
                 forKey: Keys.voiceFnTapModeEnabled
             )
         }
+    }
+
+    @Published var remoteVoiceKeyTarget: RemoteVoiceKeyTarget {
+        didSet { defaults.set(remoteVoiceKeyTarget.rawValue, forKey: Keys.remoteVoiceKeyTarget) }
     }
 
     @Published var localTranscriptHistoryEnabled: Bool {
@@ -533,6 +539,9 @@ final class AppSettings: ObservableObject {
         voiceFnTapModeEnabled = defaults.bool(
             forKey: Keys.voiceFnTapModeEnabled
         )
+        remoteVoiceKeyTarget = RemoteVoiceKeyTarget(
+            rawValue: defaults.string(forKey: Keys.remoteVoiceKeyTarget) ?? ""
+        ) ?? .function
         localTranscriptHistoryEnabled = defaults.bool(
             forKey: Keys.localTranscriptHistoryEnabled
         )
@@ -1286,6 +1295,7 @@ final class AppSettings: ObservableObject {
             checksForPreReleaseUpdates: checksForPreReleaseUpdates,
             experimentalContinuousRecordingEnabled: experimentalContinuousRecordingEnabled,
             voiceFnTapModeEnabled: voiceFnTapModeEnabled,
+            remoteVoiceKeyTarget: remoteVoiceKeyTarget,
             continuousRecordingPowerBindingBackup: continuousRecordingPowerBindingBackup
         )
         let encoder = JSONEncoder()
@@ -1347,6 +1357,7 @@ final class AppSettings: ObservableObject {
             self.checksForPreReleaseUpdates = checksForPreReleaseUpdates
         }
         voiceFnTapModeEnabled = configuration.voiceFnTapModeEnabled ?? false
+        remoteVoiceKeyTarget = configuration.remoteVoiceKeyTarget ?? .function
         applyContinuousRecordingExperimentState(
             enabled: configuration.experimentalContinuousRecordingEnabled ?? false,
             backup: configuration.continuousRecordingPowerBindingBackup
