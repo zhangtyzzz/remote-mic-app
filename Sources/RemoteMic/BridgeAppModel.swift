@@ -151,6 +151,7 @@ final class BridgeAppModel: ObservableObject, XiaomiBluetoothBridgeDelegate {
     let settings: AppSettings
     let privateFeature: PrivateFeatureIntegration
     let macroFeature: MacroFeatureIntegration
+    let agentController: AgentControllerModel
 
     @Published private(set) var connectionStatus = LocalizedMessage("bluetooth.status.initializing")
     @Published private(set) var hidStatus = LocalizedMessage("button_mapping.status.disabled")
@@ -301,11 +302,13 @@ final class BridgeAppModel: ObservableObject, XiaomiBluetoothBridgeDelegate {
         initialAudioDevices: [AudioDeviceInfo] = [],
         privateFeature: PrivateFeatureIntegration = PrivateFeatureIntegration(),
         macroFeature: MacroFeatureIntegration = MacroFeatureIntegration(),
+        agentController: AgentControllerModel = AgentControllerModel(),
         transcriptArchiveStore: TranscriptArchiveStore = TranscriptArchiveStore()
     ) {
         self.settings = settings
         self.privateFeature = privateFeature
         self.macroFeature = macroFeature
+        self.agentController = agentController
         self.transcriptArchiveStore = transcriptArchiveStore
         audioDevices = initialAudioDevices
         audioOutput.onConfigurationChange = { [weak self] in
@@ -2122,14 +2125,28 @@ final class BridgeAppModel: ObservableObject, XiaomiBluetoothBridgeDelegate {
 
     @discardableResult
     private func performInternalAction(_ action: ButtonAction) -> Bool {
-        guard action == .toggleLongRecording else { return false }
-        guard action.isEnabled(
-            experimentalContinuousRecordingEnabled: settings.experimentalContinuousRecordingEnabled
-        ) else {
-            AppLogger.shared.write("LONG RECORDING ignored feature_enabled=false")
+        switch action {
+        case .toggleLongRecording:
+            guard action.isEnabled(
+                experimentalContinuousRecordingEnabled: settings.experimentalContinuousRecordingEnabled
+            ) else {
+                AppLogger.shared.write("LONG RECORDING ignored feature_enabled=false")
+                return false
+            }
+            return toggleLongRecording()
+        case .agentActivateSelected:
+            return agentController.activateSelected()
+        case .agentSelectNext:
+            return agentController.selectNext()
+        case .agentSelectPrevious:
+            return agentController.selectPrevious()
+        case .agentSubmit:
+            return agentController.submit()
+        case .agentInterrupt:
+            return agentController.interrupt()
+        default:
             return false
         }
-        return toggleLongRecording()
     }
 
     private func toggleLongRecording() -> Bool {
@@ -2650,12 +2667,16 @@ final class BridgeAppModel: ObservableObject, XiaomiBluetoothBridgeDelegate {
     private func applyVoiceFunctionMapping(neutralizeVoiceKey: Bool) -> Bool {
         let applied = voiceFunctionMapper.apply(
             suppressPowerKey: settings.customMappingEnabled,
-            neutralizeVoiceKey: neutralizeVoiceKey
+            neutralizeVoiceKey: neutralizeVoiceKey,
+            voiceKeyTarget: settings.remoteVoiceKeyTarget
         )
         if !isStreaming {
             isVoiceTriggerEnabled = applied
+            let enabledStatusKey = settings.remoteVoiceKeyTarget == .leftOption
+                ? "voice_button.status.option_enabled"
+                : "voice_button.status.fn_enabled"
             voiceShortcutStatus = LocalizedMessage(
-                applied ? "voice_button.status.fn_enabled" : "voice_button.status.waiting"
+                applied ? enabledStatusKey : "voice_button.status.waiting"
             )
         }
         return !settings.customMappingEnabled || voiceFunctionMapper.isPowerKeySuppressed

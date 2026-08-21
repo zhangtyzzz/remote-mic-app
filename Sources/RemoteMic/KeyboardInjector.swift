@@ -235,7 +235,11 @@ enum KeyboardInjector {
         case .toggleLongRecording:
             break
         case .openRemoteMic, .openCodex, .openClaude, .openCmux, .openWeChat, .openCursor, .openXcode,
-             .openSlack, .openWeCom, .openNeteaseMusic, .openChrome, .openSafari, .openZed:
+             .openSlack, .openWeCom, .openNeteaseMusic, .openChrome, .openSafari, .openZed,
+             .openAntigravity, .openOpenCode:
+            break
+        case .agentActivateSelected, .agentSelectNext, .agentSelectPrevious, .agentSubmit,
+             .agentInterrupt:
             break
         }
         return true

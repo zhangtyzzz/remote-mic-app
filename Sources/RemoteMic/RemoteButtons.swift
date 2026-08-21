@@ -338,6 +338,8 @@ enum PresetApplication: String, CaseIterable, Identifiable {
     case chrome
     case safari
     case zed
+    case antigravity
+    case openCode
 
     var id: String { rawValue }
 
@@ -356,6 +358,8 @@ enum PresetApplication: String, CaseIterable, Identifiable {
         case .chrome: return "Chrome"
         case .safari: return "Safari"
         case .zed: return "Zed"
+        case .antigravity: return "Antigravity"
+        case .openCode: return "OpenCode"
         }
     }
 
@@ -374,12 +378,14 @@ enum PresetApplication: String, CaseIterable, Identifiable {
         case .chrome: return "com.google.Chrome"
         case .safari: return "com.apple.Safari"
         case .zed: return "dev.zed.Zed"
+        case .antigravity: return "com.google.antigravity"
+        case .openCode: return "ai.opencode.desktop"
         }
     }
 
     var focusStrategy: ApplicationFocusStrategy? {
         switch self {
-        case .codex, .claude: return .accessibilityComposer
+        case .codex, .claude, .antigravity, .openCode: return .accessibilityComposer
         case .cmux: return .cmuxSurfaceAPI
         default: return nil
         }
@@ -398,6 +404,7 @@ enum PresetApplication: String, CaseIterable, Identifiable {
 enum ButtonActionCategory: String, CaseIterable, Identifiable {
     case basicKeys
     case systemAndMedia
+    case agentControl
     case custom
     case applications
 
@@ -407,6 +414,7 @@ enum ButtonActionCategory: String, CaseIterable, Identifiable {
         switch self {
         case .basicKeys: return "button_mapping.action_group.basic_keys"
         case .systemAndMedia: return "button_mapping.action_group.system_and_media"
+        case .agentControl: return "button_mapping.action_group.agent_control"
         case .custom: return "button_mapping.action_group.custom"
         case .applications: return "button_mapping.action_group.applications"
         }
@@ -460,6 +468,13 @@ enum ButtonAction: String, CaseIterable, Codable, Identifiable {
     case openChrome
     case openSafari
     case openZed
+    case openAntigravity
+    case openOpenCode
+    case agentActivateSelected
+    case agentSelectNext
+    case agentSelectPrevious
+    case agentSubmit
+    case agentInterrupt
 
     var id: String { rawValue }
 
@@ -511,6 +526,13 @@ enum ButtonAction: String, CaseIterable, Codable, Identifiable {
         case .openChrome: return localization.text("action.open_chrome")
         case .openSafari: return localization.text("action.open_safari")
         case .openZed: return localization.text("action.open_zed")
+        case .openAntigravity: return localization.text("action.open_antigravity")
+        case .openOpenCode: return localization.text("action.open_opencode")
+        case .agentActivateSelected: return localization.text("action.agent_activate_selected")
+        case .agentSelectNext: return localization.text("action.agent_select_next")
+        case .agentSelectPrevious: return localization.text("action.agent_select_previous")
+        case .agentSubmit: return localization.text("action.agent_submit")
+        case .agentInterrupt: return localization.text("action.agent_interrupt")
         }
     }
 
@@ -529,6 +551,8 @@ enum ButtonAction: String, CaseIterable, Codable, Identifiable {
         case .openChrome: return .chrome
         case .openSafari: return .safari
         case .openZed: return .zed
+        case .openAntigravity: return .antigravity
+        case .openOpenCode: return .openCode
         default: return nil
         }
     }
@@ -544,11 +568,14 @@ enum ButtonAction: String, CaseIterable, Codable, Identifiable {
         case .showDesktop, .contextMenu, .appSwitcher, .volumeUp, .volumeDown, .volumeMute,
              .playPause, .previousCommandLeft, .nextCommandRight, .toggleLongRecording:
             return .systemAndMedia
+        case .agentActivateSelected, .agentSelectNext, .agentSelectPrevious, .agentSubmit,
+             .agentInterrupt:
+            return .agentControl
         case .customShortcut, .openCustomApplication:
             return .custom
         case .openRemoteMic, .openCodex, .openClaude, .openCmux, .openWeChat, .openCursor,
              .openXcode, .openSlack, .openWeCom, .openNeteaseMusic, .openChrome, .openSafari,
-             .openZed:
+             .openZed, .openAntigravity, .openOpenCode:
             return .applications
         }
     }
@@ -572,11 +599,22 @@ enum ButtonAction: String, CaseIterable, Codable, Identifiable {
             .commandDelete,
             .previousCommandLeft,
             .nextCommandRight,
+            .agentActivateSelected,
+            .agentSelectNext,
+            .agentSelectPrevious,
+            .agentSubmit,
+            .agentInterrupt,
         ].contains(self) && presetApplication == nil && !isAppInternal
     }
 
     var isAppInternal: Bool {
-        self == .toggleLongRecording
+        switch self {
+        case .toggleLongRecording, .agentActivateSelected, .agentSelectNext,
+             .agentSelectPrevious, .agentSubmit, .agentInterrupt:
+            return true
+        default:
+            return false
+        }
     }
 
     func isEnabled(experimentalContinuousRecordingEnabled: Bool) -> Bool {

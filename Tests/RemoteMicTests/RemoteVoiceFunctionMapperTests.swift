@@ -27,6 +27,19 @@ struct RemoteVoiceFunctionMapperTests {
         #expect(HIDUsageMapping(property: mapping.property) == mapping)
     }
 
+    @Test func canTranslateOnlyTheRemoteVoiceKeyToLeftOption() {
+        let box = MappingServiceBox(registryID: 1, mappings: [])
+        let mapper = RemoteVoiceFunctionMapper { [box.service] }
+
+        #expect(mapper.apply(voiceKeyTarget: .leftOption))
+        #expect(box.mappings == [
+            HIDUsageMapping(
+                source: RemoteVoiceFunctionMappingPolicy.remoteVoiceKey.source,
+                destination: 0x0000_0007_0000_00E2
+            ),
+        ])
+    }
+
     @Test func suppressesRemotePowerAsHarmlessF20WithoutChangingOtherMappings() {
         let unrelated = HIDUsageMapping(
             source: 0x0000_0007_0000_0004,

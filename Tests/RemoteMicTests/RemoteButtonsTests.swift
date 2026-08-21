@@ -152,6 +152,8 @@ struct RemoteButtonsTests {
             "Chrome": "com.google.Chrome",
             "Safari": "com.apple.Safari",
             "Zed": "dev.zed.Zed",
+            "Antigravity": "com.google.antigravity",
+            "OpenCode": "ai.opencode.desktop",
         ])
         #expect(Set(ButtonAction.allCases.compactMap(\.presetApplication)) == Set(PresetApplication.allCases))
     }
@@ -160,6 +162,8 @@ struct RemoteButtonsTests {
         #expect(PresetApplication.codex.focusStrategy == .accessibilityComposer)
         #expect(PresetApplication.claude.focusStrategy == .accessibilityComposer)
         #expect(PresetApplication.cmux.focusStrategy == .cmuxSurfaceAPI)
+        #expect(PresetApplication.antigravity.focusStrategy == .accessibilityComposer)
+        #expect(PresetApplication.openCode.focusStrategy == .accessibilityComposer)
         #expect(PresetApplication.allCases.filter { $0.focusStrategy == nil } == [
             .remoteMic, .weChat, .cursor, .xcode, .slack, .weCom, .neteaseMusic, .chrome, .safari, .zed,
         ])

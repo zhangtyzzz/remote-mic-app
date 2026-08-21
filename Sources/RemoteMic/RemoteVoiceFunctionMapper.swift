@@ -30,6 +30,20 @@ struct HIDUsageMapping: Equatable {
     }
 }
 
+enum RemoteVoiceKeyTarget: String, Codable, CaseIterable {
+    case function
+    case leftOption = "left_option"
+
+    var mapping: HIDUsageMapping {
+        switch self {
+        case .function:
+            return RemoteVoiceFunctionMappingPolicy.remoteVoiceKey
+        case .leftOption:
+            return RemoteVoiceFunctionMappingPolicy.remoteVoiceKeyToLeftOption
+        }
+    }
+}
+
 enum RemoteVoiceFunctionMappingPolicy {
     // RC003 exposes its microphone button as keyboard F5 (usage page 7,
     // usage 0x3e). macOS represents the laptop Fn/Globe key as the Apple
@@ -37,6 +51,13 @@ enum RemoteVoiceFunctionMappingPolicy {
     static let remoteVoiceKey = HIDUsageMapping(
         source: 0x0000_0007_0000_003E,
         destination: 0x0000_00FF_0000_0003
+    )
+
+    // Some voice tools use the left Option key for press-to-talk. Keep their
+    // existing shortcut untouched and translate only the remote microphone key.
+    static let remoteVoiceKeyToLeftOption = HIDUsageMapping(
+        source: remoteVoiceKey.source,
+        destination: 0x0000_0007_0000_00E2
     )
 
     // Typeless 等点按式语音工具会被 Fn 长按干扰；此模式下彻底丢弃语音键的
@@ -135,7 +156,8 @@ final class RemoteVoiceFunctionMapper {
     @discardableResult
     func apply(
         suppressPowerKey: Bool = false,
-        neutralizeVoiceKey: Bool = false
+        neutralizeVoiceKey: Bool = false,
+        voiceKeyTarget: RemoteVoiceKeyTarget = .function
     ) -> Bool {
         let services = serviceProvider()
         let matchedCount = services.count
@@ -190,7 +212,7 @@ final class RemoteVoiceFunctionMapper {
                 to: current,
                 voiceMapping: neutralizeVoiceKey
                     ? RemoteVoiceFunctionMappingPolicy.neutralRemoteVoiceKey
-                    : RemoteVoiceFunctionMappingPolicy.remoteVoiceKey,
+                    : voiceKeyTarget.mapping,
                 powerMapping: suppressPowerKey
                     ? RemoteVoiceFunctionMappingPolicy.suppressedRemotePowerKey
                     : originalMappings[registryID]?.power
